@@ -4,6 +4,7 @@ namespace Framework\Database;
 
 use Framework\Di\Injector;
 use PDO, Exception, ReflectionClass;
+use ReflectionProperty;
 
 class PDODatabase implements IDatabase
 {
@@ -21,7 +22,6 @@ class PDODatabase implements IDatabase
      * @param $dbname
      * @param $user
      * @param $password
-     * @internal param $db
      */
     public function __construct($driver, $host, $dbname, $user, $password)
     {
@@ -37,7 +37,12 @@ class PDODatabase implements IDatabase
     {
         Injector::injectMethodIfExists("prePersist", $model);
 
-        $fields = (array) $model;
+        $fields = [];
+        $modelClass = new ReflectionClass($model);
+        foreach ($modelClass->getProperties(ReflectionProperty::IS_PUBLIC) as $field)
+        {
+            $fields[$field->name] = $field->getValue($model);
+        }
         $fieldNames = array_keys($fields);
 
         $values = "";
@@ -154,13 +159,20 @@ class PDODatabase implements IDatabase
      * @internal param $class1
      * @internal param $class2
      */
-    public function many(Model $model, $target, $mapping)
+    public function join(Model $model, $target, $mapping = null)
     {
         $mappingTokens = explode("\\", $mapping);
         $mapping = end($mappingTokens);
         $targetClass = new ReflectionClass($target);
         $targetName = $targetClass->getShortName();
         $modelName = (new ReflectionClass($model))->getShortName();
+
+        //Not M2M call
+        if (!$mapping)
+        {
+            $field = "id$modelName";
+            return $this->findAll($target, Where::$field($mapping->id));
+        }
 
         //Extract the fields
         $fields = [];

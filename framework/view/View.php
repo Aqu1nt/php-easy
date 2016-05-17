@@ -69,6 +69,17 @@ class View
         self::$vars = self::$vars + $vars;
     }
 
+	public static function viewExists($name)
+	{
+		try {
+			self::viewPath($name);
+			return true;
+		} catch (Exception $e)
+		{
+			return false;
+		}
+	}
+
 	/**
 	 * Builds the path of a .view.php file
 	 * Throws an exception if the file wasn't found
@@ -84,7 +95,7 @@ class View
 		if (! file_exists($file)) throw new Exception("View $file doesn't exist!");
 		return $file;
 	}
-	
+
 	/**
 	 * Returns a substring from start to end
 	 * @param string $text
@@ -588,15 +599,16 @@ class View
 		$searches = [
 				Statement::st("out"),
 				Statement::st("outif"),
-				Statement::st("exe")
+				Statement::st("exe"),
 		];
-		
-		
-		
+
+
+
 		$_offset = 0;
 		while ($_st = Statement::next($_view, $searches, $_offset))
 		{
 			$page .= View::substr($_view, $_offset, $_st->startIndex);
+			$_offset = $_st->endIndex;
 
 			//Compile {{ ... }} statements to executable code
 			if ($_st->statement == Statement::st("out"))

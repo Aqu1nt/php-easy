@@ -59,9 +59,9 @@ abstract class Model
      * @param $mapping
      * @return mixed
      */
-    public function many($targetClass, $mapping)
+    public function join($targetClass, $mapping = null)
     {
-        return self::db()->many($this, $targetClass, $mapping);
+        return self::db()->join($this, $targetClass, $mapping);
     }
 
     /**

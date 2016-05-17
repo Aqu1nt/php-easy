@@ -123,14 +123,26 @@ class Injector
 
         if ($constructor = $class->getConstructor()) {
             $params = self::params($constructor->getParameters());
-//            $instance = $class->newInstanceWithoutConstructor();
-//            self::injectMethod("__construct", $instance);
             $instance = $class->newInstanceArgs($params);
         } else {
             $instance = $class->newInstance();
         }
 
+        //Inject inject(...) method
+        self::injectInto($instance);
+
         return $instance;
+    }
+
+    /**
+     * Injects all dependencies into the "inject" method if
+     * available
+     * @param $object
+     * @return mixed
+     */
+    public static function injectInto($object)
+    {
+        return self::injectMethodIfExists("inject", $object);
     }
 
     /**

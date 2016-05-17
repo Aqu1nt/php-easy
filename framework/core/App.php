@@ -120,8 +120,19 @@ class App
             }
             else if ($out instanceof HttpException)
             {
-                $ex = ["msg" => $out->message, "code" => $out->status, "type" => get_class($out)];
-                echo json_encode($ex, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+				App::status($out->status);
+				if (View::viewExists($out->status)) //404.view.php
+				{
+					echo View::create($out->status, [ "error" => $out ]);
+				} else {
+					$ex = ["type" => get_class($out)];
+					$reflClass = new \ReflectionClass($out);
+					$props = $reflClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+					foreach($props as $prop) {
+						$ex[$prop->getName()] = $prop->getValue($out);
+					}
+					echo json_encode($ex, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+				}
             }
             else
             {

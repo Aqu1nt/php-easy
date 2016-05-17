@@ -53,13 +53,14 @@ interface IDatabase
      */
     public function findAll($class, ... $filters);
 
+
     /**
      * @param Model $model
      * @param $target
      * @param $mapping
      * @return mixed
      */
-    public function many(Model $model, $target, $mapping);
+    public function join(Model $model, $target, $mapping);
 
     /**
      * @param $str
